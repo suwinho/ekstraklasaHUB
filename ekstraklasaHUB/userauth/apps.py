@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class MainpaigeConfig(AppConfig):
+class UserauthConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'mainpaige'
+    name = 'userauth'

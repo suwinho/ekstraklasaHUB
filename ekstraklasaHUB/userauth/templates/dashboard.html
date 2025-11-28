@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Panel Główny - EkstraklasaHUB</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        background: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .card {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        width: 500px;
+        text-align: center;
+      }
+      .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        background: #d9534f;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        margin-top: 20px;
+      }
+      .btn:hover {
+        background: #c9302c;
+      }
+      h1 {
+        color: #008740;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Witaj w EkstraklasaHUB!</h1>
+
+      <p>
+        Jesteś zalogowany jako:
+        <strong>{{ user.first_name|default:user.username }}</strong>
+      </p>
+
+      <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee" />
+
+      <p>
+        To jest Twój panel główny. Tutaj w przyszłości pojawią się statystyki i
+        dane.
+      </p>
+
+      <a href="{% url 'logout' %}" class="btn">Wyloguj się</a>
+    </div>
+  </body>
+</html>

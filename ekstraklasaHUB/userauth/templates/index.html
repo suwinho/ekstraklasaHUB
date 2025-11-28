@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Logowanie - EkstraklasaHUB</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        background: #f4f4f4;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+      .card {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        width: 350px;
+      }
+      .form-control {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+        box-sizing: border-box;
+      }
+      .btn {
+        width: 100%;
+        padding: 10px;
+        background: #008740;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      .btn:hover {
+        background: #006b33;
+      }
+      .errorlist {
+        color: red;
+        list-style: none;
+        padding: 0;
+        font-size: 0.8rem;
+      }
+      .messages {
+        list-style: none;
+        padding: 0;
+        margin-bottom: 1rem;
+      }
+      .success {
+        color: green;
+      }
+      .error {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h2 style="text-align: center; color: #008740">Zaloguj się</h2>
+
+      {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      <form method="POST">
+        {% csrf_token %} {% for field in form %}
+        <div style="margin-bottom: 10px">
+          <label
+            for="{{ field.id_for_label }}"
+            style="display: block; font-weight: bold"
+            >{{ field.label }}</label
+          >
+          {{ field }} {% if field.errors %}
+          <ul class="errorlist">
+            {% for error in field.errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+        </div>
+        {% endfor %}
+
+        <button type="submit" class="btn">Zaloguj</button>
+      </form>
+
+      <p style="text-align: center; margin-top: 15px">
+        Nie masz konta? <a href="{% url 'register' %}">Zarejestruj się</a>
+      </p>
+    </div>
+  </body>
+</html>
