@@ -1,82 +1,119 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pl">
   <head>
     <meta charset="UTF-8" />
-    <title>Rejestracja - EkstraklasaHUB</title>
-    <style>
-      body {
-        font-family: sans-serif;
-        background: #f4f4f4;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-      }
-      .card {
-        background: white;
-        padding: 2rem;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        width: 400px;
-      }
-      .form-control {
-        width: 100%;
-        padding: 8px;
-        margin-bottom: 10px;
-        box-sizing: border-box;
-      }
-      .btn {
-        width: 100%;
-        padding: 10px;
-        background: #008740;
-        color: white;
-        border: none;
-        cursor: pointer;
-        font-size: 1rem;
-        margin-top: 10px;
-      }
-      .btn:hover {
-        background: #006b33;
-      }
-      .errorlist {
-        color: red;
-        list-style: none;
-        padding: 0;
-        font-size: 0.8rem;
-        margin-top: -5px;
-        margin-bottom: 10px;
-      }
-      label {
-        display: block;
-        font-weight: bold;
-        margin-bottom: 5px;
-        font-size: 0.9rem;
-      }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dołącz do gry - EkstraklasaHUB</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="{% static 'register.css' %}" />
   </head>
   <body>
     <div class="card">
-      <h2 style="text-align: center; color: #008740">Załóż konto</h2>
+      <h2>Dołącz do gry</h2>
+      <p class="subtitle">Zarejestruj się i wybierz swoje barwy</p>
+
+      {% if form.non_field_errors %}
+      <ul class="errorlist" style="text-align: center; margin-bottom: 20px">
+        {% for error in form.non_field_errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
 
       <form method="POST">
-        {% csrf_token %} {% for field in form %}
-        <div style="margin-bottom: 10px">
-          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-          {{ field }} {% if field.errors %}
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label class="text-label" for="{{ form.username.id_for_label }}"
+            >Nazwa użytkownika</label
+          >
+          {{ form.username }} {% if form.username.errors %}
           <ul class="errorlist">
-            {% for error in field.errors %}
+            {% for error in form.username.errors %}
             <li>{{ error }}</li>
             {% endfor %}
           </ul>
           {% endif %}
         </div>
-        {% endfor %}
 
-        <button type="submit" class="btn">Zarejestruj się</button>
+        <div class="form-group">
+          <label class="text-label" for="{{ form.email.id_for_label }}"
+            >Adres Email</label
+          >
+          {{ form.email }} {% if form.email.errors %}
+          <ul class="errorlist">
+            {% for error in form.email.errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label class="text-label">Wybierz swój klub</label>
+          <div class="team-grid">
+            {% for radio in form.favorite_team %} {% if radio.data.value %}
+            <label class="team-option">
+              {{ radio.tag }}
+              <div class="team-label">
+                <img
+                  src="{% static 'clubs/' %}{{ radio.choice_label }}.png"
+                  alt="{{ radio.choice_label }}"
+                  class="team-logo"
+                  onerror="this.src='https://via.placeholder.com/50?text=⚽';"
+                />
+                <span class="team-name">{{ radio.choice_label }}</span>
+              </div>
+            </label>
+            {% endif %} {% endfor %}
+          </div>
+          {% if form.favorite_team.errors %}
+          <ul class="errorlist">
+            {% for error in form.favorite_team.errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label class="text-label" for="{{ form.password.id_for_label }}"
+            >Hasło</label
+          >
+          {{ form.password }} {% if form.password.errors %}
+          <ul class="errorlist">
+            {% for error in form.password.errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label
+            class="text-label"
+            for="{{ form.confirm_password.id_for_label }}"
+            >Potwierdź hasło</label
+          >
+          {{ form.confirm_password }} {% if form.confirm_password.errors %}
+          <ul class="errorlist">
+            {% for error in form.confirm_password.errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+        </div>
+
+        <button type="submit" class="btn">Stwórz konto</button>
       </form>
 
-      <p style="text-align: center; margin-top: 15px">
+      <p class="links">
         Masz już konto? <a href="{% url 'login' %}">Zaloguj się</a>
       </p>
     </div>

@@ -4,7 +4,34 @@ from django.core.exceptions import ValidationError
 
 User = get_user_model()
 
+EKSTRAKLASA_TEAMS = [
+    ('Jagiellonia Białystok', 'Jagiellonia Białystok'),
+    ('Wisła Płock', 'Wisła Płock'),
+    ('Legia Warszawa', 'Legia Warszawa'),
+    ('Pogoń Szczecin', 'Pogoń Szczecin'),
+    ('Lech Poznań', 'Lech Poznań'),
+    ('Górnik Zabrze', 'Górnik Zabrze'),
+    ('Raków Częstochowa', 'Raków Częstochowa'),
+    ('Zagłębie Lubin', 'Zagłębie Lubin'),
+    ('Widzew Łódź', 'Widzew Łódź'),
+    ('Piast Gliwice', 'Piast Gliwice'),
+    ('Bruk-Bet Termalica Nieciecza', 'Bruk-Bet Termalica Nieciecza'),
+    ('Arka Gdynia', 'Arka Gdynia'),
+    ('Cracovia', 'Cracovia'),
+    ('Korona Kielce', 'Korona Kielce'),
+    ('Radomiak Radom', 'Radomiak Radom'),
+    ('Lechia Gdańsk', 'Lechia Gdańsk'),
+    ('GKS Katowice', 'GKS Katowice'),
+    ('Motor Lublin', 'Motor Lublin'),
+]
+
 class UserRegistrationForm(forms.ModelForm):
+    favorite_team = forms.ChoiceField(
+        choices=EKSTRAKLASA_TEAMS, 
+        label="Wybierz swój klub",
+        widget=forms.RadioSelect(attrs={'class': 'team-radio-input'})
+    )
+    
     password = forms.CharField(
         label="Hasło",
         widget=forms.PasswordInput(attrs={'class': 'form-control'})
@@ -16,14 +43,8 @@ class UserRegistrationForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'first_name', 'last_name']
-        widgets = {
-            'username': forms.TextInput(attrs={'class': 'form-control'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control'}),
-            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
-        }
-
+        fields = ['username', 'email'] 
+        
     def clean(self):
         cleaned_data = super().clean()
         password = cleaned_data.get("password")
@@ -35,9 +56,10 @@ class UserRegistrationForm(forms.ModelForm):
 
     def save(self, commit=True):
         user = super().save(commit=False)
-        user.set_password(self.cleaned_data["password"])
+        user.set_password(self.cleaned_data["password"])      
+        selected_team = self.cleaned_data.get('favorite_team')     
         if commit:
-            user.save()
+            user.save()       
         return user
 
 

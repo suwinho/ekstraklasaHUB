@@ -1,60 +1,144 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="pl">
   <head>
     <meta charset="UTF-8" />
-    <title>Panel Główny - EkstraklasaHUB</title>
-    <style>
-      body {
-        font-family: sans-serif;
-        background: #f4f4f4;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-      }
-      .card {
-        background: white;
-        padding: 2rem;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        width: 500px;
-        text-align: center;
-      }
-      .btn {
-        display: inline-block;
-        padding: 10px 20px;
-        background: #d9534f;
-        color: white;
-        text-decoration: none;
-        border-radius: 4px;
-        margin-top: 20px;
-      }
-      .btn:hover {
-        background: #c9302c;
-      }
-      h1 {
-        color: #008740;
-      }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel - EkstraklasaHUB</title>
+    <link rel="stylesheet" href="{% static 'dashboard.css' %}" />
   </head>
   <body>
-    <div class="card">
-      <h1>Witaj w EkstraklasaHUB!</h1>
+    <div class="dashboard-container">
+      <div class="header-section">
+        <h2>EKSTRAKLASA<span style="color: var(--primary-green)">HUB</span></h2>
+        <div class="user-info">
+          <span class="user-label">
+            Trener: <span class="user-name">{{ username }}</span>
+          </span>
+          <a href="{% url 'logout' %}" class="btn-logout-small">WYLOGUJ</a>
+        </div>
+      </div>
 
-      <p>
-        Jesteś zalogowany jako:
-        <strong>{{ user.first_name|default:user.username }}</strong>
-      </p>
+      <div class="tile tile-table">
+        <div class="tile-header">TABELA LIGOWA</div>
+        <div class="tile-content">
+          {% if table %}
+          <table>
+            <thead>
+              <tr>
+                <th>Poz</th>
+                <th>Klub</th>
+                <th>M</th>
+                <th>PKT</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in table %}
+              <tr
+                class="{% if forloop.first %}pos-1{% elif forloop.counter > 15 %}pos-down{% endif %}"
+              >
+                <td class="rank-cell">{{ row.intRank }}</td>
+                <td>
+                  <div class="team-flex">
+                    {% if row.strTeamBadge %}
+                    <img src="{{ row.strTeamBadge }}" width="20" />
+                    {% endif %}
+                    <span class="team-truncate">{{ row.strTeam }}</span>
+                  </div>
+                </td>
+                <td class="played-cell">{{ row.intPlayed }}</td>
+                <td class="points-cell">{{ row.intPoints }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p class="no-data">Brak danych.</p>
+          {% endif %}
+        </div>
+      </div>
 
-      <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee" />
+      <div class="tile tile-matches">
+        <div class="tile-header">CENTRUM MECZOWE</div>
+        <div class="tile-content">
+          {% if error %}
+          <div class="offline-banner">{{ error }} (Tryb Offline)</div>
+          {% endif %}
 
-      <p>
-        To jest Twój panel główny. Tutaj w przyszłości pojawią się statystyki i
-        dane.
-      </p>
+          <div class="section-divider">Ostatnie Wyniki</div>
+          {% if results %}
+          <table>
+            <tbody>
+              {% for match in results %}
+              <tr>
+                <td class="home-cell">
+                  <span>{{ match.strHomeTeam }}</span>
+                  {% if match.strHomeTeamBadge %}
+                  <img
+                    src="{{ match.strHomeTeamBadge }}"
+                    width="24"
+                    class="badge-left"
+                  />
+                  {% endif %}
+                </td>
+                <td class="center-cell">
+                  <span class="score-badge">
+                    {{ match.intHomeScore }}-{{ match.intAwayScore }}
+                  </span>
+                </td>
+                <td class="away-cell">
+                  {% if match.strAwayTeamBadge %}
+                  <img
+                    src="{{ match.strAwayTeamBadge }}"
+                    width="24"
+                    class="badge-right"
+                  />
+                  {% endif %}
+                  <span>{{ match.strAwayTeam }}</span>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% endif %}
 
-      <a href="{% url 'logout' %}" class="btn">Wyloguj się</a>
+          <div class="section-divider">Nadchodzące</div>
+          {% if matches %}
+          <table>
+            <tbody>
+              {% for match in matches %}
+              <tr>
+                <td class="home-cell-schedule">
+                  {{ match.strHomeTeam }} {% if match.strHomeTeamBadge %}
+                  <img
+                    src="{{ match.strHomeTeamBadge }}"
+                    width="22"
+                    class="badge-left"
+                  />
+                  {% endif %}
+                </td>
+                <td class="center-cell">
+                  <div class="date-sub">{{ match.dateEvent|slice:"5:" }}</div>
+                  <div class="time-main">{{ match.strTime|slice:":5" }}</div>
+                </td>
+                <td class="away-cell-schedule">
+                  {% if match.strAwayTeamBadge %}
+                  <img
+                    src="{{ match.strAwayTeamBadge }}"
+                    width="22"
+                    class="badge-right"
+                  />
+                  {% endif %} {{ match.strAwayTeam }}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <p class="no-data">Brak nadchodzących meczów.</p>
+          {% endif %}
+        </div>
+      </div>
     </div>
   </body>
 </html>
