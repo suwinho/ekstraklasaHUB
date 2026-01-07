@@ -139,6 +139,73 @@
           {% endif %}
         </div>
       </div>
+
+      <div class="tile tile-scorers"></div>
     </div>
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"
+      type="text/javascript"
+    ></script>
+
+    <script>
+      const mqtt_broker = "broker.hivemq.com";
+      const mqtt_port = 8000;
+      const mqtt_topic = "ekstraklasa/live/scores";
+      const clientID = "web_client_" + Math.random().toString(16).substr(2, 8);
+      const client = new Paho.MQTT.Client(mqtt_broker, mqtt_port, clientID);
+
+      client.onMessageArrived = function (message) {
+        console.log("Otrzymano dane MQTT!");
+        const matches = JSON.parse(message.payloadString);
+        updateScoreboard(matches);
+      };
+
+      client.onConnectionLost = function (responseObject) {
+        if (responseObject.errorCode !== 0) {
+          console.log("Połączenie utracone: " + responseObject.errorMessage);
+        }
+      };
+
+      client.connect({
+        onSuccess: function () {
+          console.log("Połączono z MQTT");
+          client.subscribe(mqtt_topic);
+        },
+        useSSL: false,
+      });
+
+      function updateScoreboard(data) {
+        data.forEach((match) => {
+          const rows = document.querySelectorAll("tr");
+          rows.forEach((row) => {
+            if (
+              row.innerHTML.includes(match.home) &&
+              row.innerHTML.includes(match.away)
+            ) {
+              const scoreBadge = row.querySelector(".score-badge");
+
+              if (scoreBadge) {
+                const newScore = `${match.homeScore}-${match.awayScore}`;
+
+                if (
+                  scoreBadge.innerText !== newScore &&
+                  match.homeScore !== null
+                ) {
+                  scoreBadge.innerText = newScore;
+
+                  scoreBadge.style.backgroundColor = "#156634";
+                  scoreBadge.style.color = "#fff";
+                  setTimeout(() => {
+                    scoreBadge.style.backgroundColor = "#111";
+                    scoreBadge.style.color = "#156634";
+                  }, 2000);
+                }
+              }
+            }
+          });
+        });
+      }
+    </script>
   </body>
 </html>
