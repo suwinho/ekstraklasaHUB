@@ -6,11 +6,79 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Panel - EkstraklasaHUB</title>
     <link rel="stylesheet" href="{% static 'dashboard.css' %}" />
+
+    <style>
+      .search-container {
+        position: relative;
+        margin: 0 20px;
+        flex-grow: 1;
+        max-width: 400px;
+      }
+
+      #club-search {
+        width: 100%;
+        padding: 10px 15px;
+        border-radius: 20px;
+        border: 1px solid #333;
+        background-color: #1a1a1a;
+        color: #fff;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.3s;
+      }
+
+      #club-search:focus {
+        border-color: var(--primary-green, #156634);
+      }
+
+      #search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background-color: #222;
+        border: 1px solid #333;
+        border-radius: 8px;
+        list-style: none;
+        padding: 0;
+        margin-top: 5px;
+        z-index: 1000;
+        display: none;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      }
+
+      #search-results li {
+        padding: 12px 15px;
+        cursor: pointer;
+        color: #eee;
+        border-bottom: 1px solid #333;
+        transition: background 0.2s;
+      }
+
+      #search-results li:last-child {
+        border-bottom: none;
+      }
+
+      #search-results li:hover {
+        background-color: var(--primary-green, #156634);
+        color: white;
+      }
+    </style>
   </head>
   <body>
     <div class="dashboard-container">
       <div class="header-section">
         <h2>EKSTRAKLASA<span style="color: var(--primary-green)">HUB</span></h2>
+
+        <div class="search-container">
+          <input
+            type="text"
+            id="club-search"
+            placeholder="Szukaj klubu (np. Legia)..."
+            autocomplete="off"
+          />
+          <ul id="search-results"></ul>
+        </div>
         <div class="user-info">
           <span class="user-label">
             Trener: <span class="user-name">{{ username }}</span>
@@ -149,6 +217,51 @@
     ></script>
 
     <script>
+      const searchInput = document.getElementById("club-search");
+      const resultsList = document.getElementById("search-results");
+
+      searchInput.addEventListener("input", function () {
+        const query = searchInput.value;
+
+        if (query.length > 0) {
+          fetch(`/api/search/?search=${query}`)
+            .then((response) => response.json())
+            .then((data) => {
+              resultsList.innerHTML = "";
+
+              if (data.results.length > 0) {
+                resultsList.style.display = "block";
+
+                data.results.forEach((club) => {
+                  const li = document.createElement("li");
+                  li.textContent = club.name;
+
+                  li.addEventListener("click", () => {
+                    window.location.href = `/club/${club.id}/stats/`;
+                  });
+
+                  resultsList.appendChild(li);
+                });
+              } else {
+                resultsList.style.display = "none";
+              }
+            })
+            .catch((err) => console.error("Błąd wyszukiwania:", err));
+        } else {
+          resultsList.style.display = "none";
+          resultsList.innerHTML = "";
+        }
+      });
+
+      document.addEventListener("click", function (e) {
+        if (
+          !searchInput.contains(e.target) &&
+          !resultsList.contains(e.target)
+        ) {
+          resultsList.style.display = "none";
+        }
+      });
+
       const mqtt_broker = "broker.hivemq.com";
       const mqtt_port = 8000;
       const mqtt_topic = "ekstraklasa/live/scores";

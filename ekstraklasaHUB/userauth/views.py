@@ -1,9 +1,11 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import UserRegistrationForm, LoginForm
-from .utils import fetch_data, fetch_league_table, fetch_last_events
+from django.http import JsonResponse, Http404
+from .utils import fetch_data, fetch_league_table, fetch_last_events, fetch_team_details, fetch_last_matches
+from .models import Club
 
 def register_view(request):
     if request.method == 'POST':
@@ -65,3 +67,86 @@ def dashboard_view(request):
 
 def main_view(request):
     return render(request, "main.html")
+
+EKSTRAKLASA_TEAMS = [
+    ('Jagiellonia Białystok', 'Jagiellonia Białystok'),
+    ('Wisła Płock', 'Wisła Płock'),
+    ('Legia Warszawa', 'Legia Warszawa'),
+    ('Pogoń Szczecin', 'Pogoń Szczecin'),
+    ('Lech Poznań', 'Lech Poznań'),
+    ('Górnik Zabrze', 'Górnik Zabrze'),
+    ('Raków Częstochowa', 'Raków Częstochowa'),
+    ('Zagłębie Lubin', 'Zagłębie Lubin'),
+    ('Widzew Łódź', 'Widzew Łódź'),
+    ('Piast Gliwice', 'Piast Gliwice'),
+    ('Bruk-Bet Termalica Nieciecza', 'Bruk-Bet Termalica Nieciecza'),
+    ('Arka Gdynia', 'Arka Gdynia'),
+    ('Cracovia', 'Cracovia'),
+    ('Korona Kielce', 'Korona Kielce'),
+    ('Radomiak Radom', 'Radomiak Radom'),
+    ('Lechia Gdańsk', 'Lechia Gdańsk'),
+    ('GKS Katowice', 'GKS Katowice'),
+    ('Motor Lublin', 'Motor Lublin'),
+]
+
+def search_clubs_api(request):
+    search_query = request.GET.get('search', '').lower()
+    
+    results = []
+    
+    if search_query:
+        for index, team in enumerate(EKSTRAKLASA_TEAMS):
+            team_name = team[0] 
+            
+            if search_query in team_name.lower():
+                results.append({
+                    'id': index,   
+                    'name': team_name
+                })
+    
+    return JsonResponse({'results': results})
+
+def club_stats_view(request, club_id):
+    try:
+        team_tuple = EKSTRAKLASA_TEAMS[int(club_id)]
+        local_name = team_tuple[0] 
+    except (IndexError, ValueError):
+        raise Http404("Klub nie istnieje")
+
+    context = {
+        'club_id': club_id,    
+        'local_name': local_name,
+        'last_matches': [] 
+    }
+
+    team_details = fetch_team_details(local_name)
+    
+    if team_details:
+        context['team'] = team_details
+        
+        api_id = team_details.get('idTeam')
+        if api_id:
+            raw_matches = fetch_last_matches(api_id)
+            cleaned_matches = []
+            
+            my_team_name = team_details.get('strTeam', '')
+
+            for match in raw_matches:
+                home = match.get('strHomeTeam', '')
+                away = match.get('strAwayTeam', '')
+                
+                if home == my_team_name:
+                    opponent = away
+                else:
+                    opponent = home
+                
+                cleaned_matches.append({
+                    'opponent': opponent,
+                    'date': match.get('dateEvent'),
+                    'score': f"{match.get('intHomeScore')}-{match.get('intAwayScore')}",
+                    'raw_match': match 
+                })
+            
+            context['last_matches'] = cleaned_matches
+            
+    return render(request, 'stats.html', context)

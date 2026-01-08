@@ -45,3 +45,39 @@ def fetch_last_events():
     except Exception as e:
         print(f"Error: {e}")
         return []
+    
+def fetch_team_details(team_name):
+    formatted_name = team_name.lower().replace(' ', '_')
+    
+    url = f"{BASE_URL}/searchteams.php?t={formatted_name}"
+    
+    try:
+        response = requests.get(url, timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        
+        teams = data.get('teams')
+        
+        if teams:
+            for team in teams:
+                if team.get('strSport') == 'Soccer':
+                    return team
+            
+            return teams[0]
+        else:
+            return None
+            
+    except Exception as e:
+        print(f"Błąd pobierania szczegółów drużyny: {e}")
+        return None
+
+def fetch_last_matches(team_id):
+    url = f"{BASE_URL}/eventslast.php?id={team_id}"
+    try:
+        response = requests.get(url, timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        return data.get('results') or []
+    except Exception as e:
+        print(f"Błąd pobierania meczów: {e}")
+        return []

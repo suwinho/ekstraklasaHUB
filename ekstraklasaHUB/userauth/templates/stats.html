@@ -1,0 +1,192 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Profil - {{ local_name }}</title>
+    <link rel="stylesheet" href="{% static 'stats.css' %}" />
+  </head>
+  <body>
+    <div class="container">
+      <a href="{% url 'dashboard' %}" class="btn-back">← WRÓĆ DO DASHBOARDU</a>
+
+      <div class="club-hero">
+        <div
+          class="hero-bg"
+          style="background-image: url('{{ team.strStadiumThumb|default:team.strFanart1|default:team.strBadge }}');"
+        ></div>
+
+        <div class="hero-content">
+          {% if team.strTeamBadge or team.strBadge %}
+          <img
+            src="{{ team.strTeamBadge|default:team.strBadge }}"
+            alt="Badge"
+            class="club-badge"
+          />
+          {% endif %}
+          <div class="club-info-text">
+            <h1>{{ team.strTeam|default:local_name }}</h1>
+
+            <div class="club-meta">
+              Założony: <strong>{{ team.intFormedYear|default:"----" }}</strong>
+            </div>
+
+            <div class="club-stadium">
+              <span class="stadium-icon">🏟</span>
+              <span class="stadium-label">Stadion:</span>
+              <span class="stadium-name"
+                >{{ team.strStadium|default:"Nieznany" }}</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-grid">
+        <div style="display: flex; flex-direction: column; gap: 25px">
+          <div class="card">
+            <h3>O Klubie</h3>
+            <div
+              style="
+                color: #ccc;
+                line-height: 1.6;
+                max-height: 200px;
+                overflow-y: auto;
+              "
+            >
+              {{ team.strDescriptionEN }}
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Ostatnie Mecze (Forma)</h3>
+            <ul class="match-list">
+              {% if last_matches %} {% for match in last_matches %}
+              <li class="match-item">
+                <span>
+                  vs {{ match.opponent }}
+                  <small style="color: #666">({{ match.date }})</small>
+                </span>
+                <span class="result-badge"> {{ match.score }} </span>
+              </li>
+              {% endfor %} {% else %}
+              <li style="padding: 10px; color: #666">
+                Brak danych o ostatnich meczach.
+              </li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 25px">
+          <div class="card">
+            <h3>Trykot Domowy</h3>
+            {% if team.strTeamJersey %}
+            <img
+              src="{{ team.strTeamJersey }}"
+              alt="Jersey"
+              class="jersey-img"
+            />
+            {% elif team.strEquipment %}
+            <img src="{{ team.strEquipment }}" alt="Kit" class="jersey-img" />
+            {% else %}
+            <div
+              style="
+                text-align: center;
+                padding: 20px;
+                color: #555;
+                border: 1px dashed #333;
+                border-radius: 5px;
+              "
+            >
+              Brak zdjęcia
+            </div>
+            {% endif %}
+          </div>
+
+          <div class="card">
+            <h3>Informacje</h3>
+            <div class="detail-row">
+              <span style="color: #888">Pojemność:</span>
+              <span class="detail-val"
+                >{{ team.intStadiumCapacity|default:"--" }}</span
+              >
+            </div>
+            <div class="detail-row">
+              <span style="color: #888">Kraj:</span>
+              <span class="detail-val"
+                >{{ team.strCountry|default:"Polska" }}</span
+              >
+            </div>
+            <div class="detail-row">
+              <span style="color: #888">Dyscyplina:</span>
+              <span class="detail-val" style="color: #2ecc71"
+                >{{ team.strSport|default:"--" }}</span
+              >
+            </div>
+            {% if team.strWebsite %}
+            <div class="detail-row">
+              <span style="color: #888">WWW:</span>
+              <span class="detail-val"
+                ><a
+                  href="https://{{ team.strWebsite }}"
+                  target="_blank"
+                  style="color: #2ecc71"
+                  >Link</a
+                ></span
+              >
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="card live-section">
+        <h3 style="color: #2ecc71; border-color: #2ecc71">
+          <span style="font-size: 1.2em">●</span> LIVE FEED (MQTT)
+        </h3>
+        <div
+          id="mqtt-log"
+          style="
+            font-family: monospace;
+            color: #2ecc71;
+            height: 150px;
+            overflow-y: auto;
+          "
+        >
+          Oczekiwanie na połączenie z czujnikami...
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+    <script>
+      const mqtt_broker = "broker.hivemq.com";
+      const mqtt_port = 8000;
+      const clubId = "{{ club_id }}";
+      const mqtt_topic = `ekstraklasa/club/${clubId}/news`;
+      const clientID = "web_fan_" + Math.random().toString(16).substr(2, 8);
+      const client = new Paho.MQTT.Client(mqtt_broker, mqtt_port, clientID);
+
+      client.onMessageArrived = function (message) {
+        const log = document.getElementById("mqtt-log");
+        const entry = document.createElement("div");
+        entry.style.borderBottom = "1px solid #333";
+        entry.innerHTML = `<span style="color:#fff">[${new Date().toLocaleTimeString()}]</span> ${
+          message.payloadString
+        }`;
+        log.insertBefore(entry, log.firstChild);
+      };
+
+      client.connect({
+        onSuccess: function () {
+          console.log("MQTT Connected");
+          client.subscribe(mqtt_topic);
+          document.getElementById("mqtt-log").innerHTML =
+            "<i>Połączono. Oczekiwanie na wiadomości...</i>";
+        },
+        useSSL: false,
+      });
+    </script>
+  </body>
+</html>
