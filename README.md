@@ -33,7 +33,6 @@ The project utilizes the following technologies:
 * **JavaScript (ES6+)** - Client-side logic.
 * **Paho MQTT** - WebSocket client for live data.
 * **HTML5 / CSS3** - Custom styling (Dark Theme).
-* **SQLite / PostgreSQL** - Database.
 
 ## ⚙️ Prerequisites
 
