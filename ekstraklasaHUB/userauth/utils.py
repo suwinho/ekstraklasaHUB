@@ -1,5 +1,7 @@
 import requests
 import os
+import paho.mqtt.client as mqtt
+import json
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -81,3 +83,22 @@ def fetch_last_matches(team_id):
     except Exception as e:
         print(f"Błąd pobierania meczów: {e}")
         return []
+    
+def send_prediction_notification(username, match, action="zaktualizował typ"):
+    try:
+        broker = "broker.hivemq.com"
+        port = 1883
+        topic = "ekstraklasa/notifications" 
+        
+        client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, "DjangoNotifier")
+        client.connect(broker, port, 60)
+        
+        message = {
+            "type": "notification",
+            "text": f"Użytkownik {username} {action} na mecz {match}!"
+        }
+        
+        client.publish(topic, json.dumps(message))
+        client.disconnect()
+    except Exception as e:
+        print(f"Błąd wysyłania powiadomienia: {e}")

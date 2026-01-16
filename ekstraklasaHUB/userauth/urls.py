@@ -9,4 +9,5 @@ urlpatterns = [
     path('', views.main_view, name="main_view"),
     path('api/search/', views.search_clubs_api, name='search_clubs_api'),
     path('club/<int:club_id>/stats/', views.club_stats_view, name='club_stats'),
+    path('api/predict/', views.predict_match, name='predict_match'),
 ]   

@@ -12,14 +12,14 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         
-        client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, "DjangoPublisherBot")
+        client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, "DjangoNotifier")
         try:
             client.connect(BROKER, PORT, 60)
         except Exception as e:
             self.stdout.write(self.style.ERROR(f"Błąd połączenia z brokerem: {e}"))
             return
 
-        self.stdout.write(self.style.SUCCESS(f"Połączono z {BROKER}. Rozpoczynam nasłuch API..."))
+        self.stdout.write(self.style.SUCCESS(f"Połączono z {BROKER}."))
 
         while True:
             try:
@@ -43,6 +43,6 @@ class Command(BaseCommand):
                 self.stdout.write(f"Wysłano aktualizację ({len(live_update)} meczów) na temat {TOPIC}")
 
             except Exception as e:
-                self.stdout.write(self.style.ERROR(f"Błąd pętli: {e}"))
+                self.stdout.write(self.style.ERROR(f"Błąd: {e}"))
 
             time.sleep(60)
