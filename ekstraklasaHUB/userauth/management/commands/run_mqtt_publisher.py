@@ -40,7 +40,6 @@ class Command(BaseCommand):
                 payload = json.dumps(live_update)
                 client.publish(TOPIC, payload)
                 
-                self.stdout.write(f"Wysłano aktualizację ({len(live_update)} meczów) na temat {TOPIC}")
 
             except Exception as e:
                 self.stdout.write(self.style.ERROR(f"Błąd: {e}"))

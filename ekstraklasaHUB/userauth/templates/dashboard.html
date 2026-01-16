@@ -1,168 +1,11 @@
 {% load static %}
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pl">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Panel - EkstraklasaHUB</title>
     <link rel="stylesheet" href="{% static 'dashboard.css' %}" />
-
-    <style>
-      .search-container {
-        position: relative;
-        margin: 0 20px;
-        flex-grow: 1;
-        max-width: 400px;
-      }
-      #club-search {
-        width: 100%;
-        padding: 10px 15px;
-        border-radius: 20px;
-        border: 1px solid #333;
-        background-color: #1a1a1a;
-        color: #fff;
-        font-size: 14px;
-        outline: none;
-        transition: border-color 0.3s;
-      }
-      #club-search:focus {
-        border-color: var(--primary-green, #156634);
-      }
-      #search-results {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background-color: #222;
-        border: 1px solid #333;
-        border-radius: 8px;
-        list-style: none;
-        padding: 0;
-        margin-top: 5px;
-        z-index: 1000;
-        display: none;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-      }
-      #search-results li {
-        padding: 12px 15px;
-        cursor: pointer;
-        color: #eee;
-        border-bottom: 1px solid #333;
-        transition: background 0.2s;
-      }
-      #search-results li:last-child {
-        border-bottom: none;
-      }
-      #search-results li:hover {
-        background-color: var(--primary-green, #156634);
-        color: white;
-      }
-
-      .wallet-display {
-        font-family: "Consolas", monospace;
-        color: #ffd700;
-        font-weight: bold;
-        font-size: 1.1rem;
-        margin-right: 15px;
-        border: 1px solid #555;
-        padding: 5px 10px;
-        border-radius: 5px;
-        background: rgba(0, 0, 0, 0.5);
-      }
-
-      .prediction-box {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        justify-content: flex-start;
-      }
-
-      .pred-input {
-        width: 30px;
-        background: #222;
-        border: 1px solid #444;
-        color: #fff;
-        text-align: center;
-        border-radius: 4px;
-        padding: 4px;
-        font-weight: bold;
-      }
-      .pred-stake {
-        width: 50px;
-        background: #1a1a1a;
-        border: 1px solid #ffd700;
-        color: #ffd700;
-        text-align: right;
-        border-radius: 4px;
-        padding: 4px;
-      }
-
-      .pred-input:focus,
-      .pred-stake:focus {
-        outline: none;
-        border-color: var(--primary-green, #156634);
-      }
-
-      .btn-save-pred {
-        background: none;
-        border: 1px solid #444;
-        cursor: pointer;
-        border-radius: 4px;
-        padding: 4px 8px;
-        color: #ccc;
-      }
-      .btn-save-pred:hover {
-        background: var(--primary-green, #156634);
-        border-color: var(--primary-green, #156634);
-        color: #fff;
-      }
-
-      .btn-del-pred {
-        background: none;
-        border: 1px solid #444;
-        cursor: pointer;
-        border-radius: 4px;
-        padding: 4px 8px;
-        color: #ccc;
-        margin-left: 2px;
-      }
-      .btn-del-pred:hover {
-        background: #800;
-        border-color: #800;
-        color: #fff;
-      }
-
-      #notifications {
-        position: fixed;
-        top: 80px;
-        right: 20px;
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-      .mqtt-toast {
-        background: #1a1a1a;
-        border-left: 4px solid var(--primary-green, #156634);
-        color: #fff;
-        padding: 15px 20px;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
-        border-radius: 4px;
-        min-width: 250px;
-        animation: slideIn 0.3s ease-out;
-        font-size: 0.9rem;
-      }
-      @keyframes slideIn {
-        from {
-          transform: translateX(100%);
-          opacity: 0;
-        }
-        to {
-          transform: translateX(0);
-          opacity: 1;
-        }
-      }
-    </style>
   </head>
   <body>
     <div class="dashboard-container">
@@ -183,7 +26,6 @@
           <div class="wallet-display">
             💰 <span id="user-balance">...</span> PLN
           </div>
-
           <span class="user-label">
             Trener: <span class="user-name">{{ username }}</span>
           </span>
@@ -340,7 +182,40 @@
         </div>
       </div>
 
-      <div class="tile tile-scorers"></div>
+      <div class="tile tile-scorers tile-fav">
+        <div class="tile-header">TWÓJ KLUB</div>
+
+        {% if favorite_team %}
+        <div
+          class="fav-bg"
+          style="background-image: url('{{ favorite_team.bg }}');"
+        ></div>
+
+        <div class="fav-content">
+          {% if favorite_team.badge %}
+          <img
+            src="{{ favorite_team.badge }}"
+            alt="{{ favorite_team.name }}"
+            class="fav-logo"
+          />
+          {% endif %}
+
+          <div>
+            <h3 class="fav-title">{{ favorite_team.name }}</h3>
+            <p class="fav-subtitle">WYBRANY ZESPÓŁ</p>
+          </div>
+
+          <a href="/club/{{ favorite_team.id }}/stats/" class="fav-btn">
+            Przejdź do profilu ➜
+          </a>
+        </div>
+        {% else %}
+        <div class="fav-empty">
+          <span style="font-size: 2rem">⚽</span>
+          <p>Nie wybrano ulubionego zespołu.</p>
+        </div>
+        {% endif %}
+      </div>
     </div>
 
     <div id="notifications"></div>
@@ -356,7 +231,7 @@
             const cookie = cookies[i].trim();
             if (cookie.substring(0, name.length + 1) === name + "=") {
               cookieValue = decodeURIComponent(
-                cookie.substring(name.length + 1)
+                cookie.substring(name.length + 1),
               );
               break;
             }
@@ -367,7 +242,7 @@
 
       function placeBet(id) {
         const box = document.querySelector(
-          `.prediction-box[data-match-id="${id}"]`
+          `.prediction-box[data-match-id="${id}"]`,
         );
         const homeScore = box.querySelector(".pred-home").value;
         const awayScore = box.querySelector(".pred-away").value;
@@ -420,7 +295,7 @@
           .then((data) => {
             if (data.status === "deleted") {
               const box = document.querySelector(
-                `.prediction-box[data-match-id="${id}"]`
+                `.prediction-box[data-match-id="${id}"]`,
               );
               box.querySelector(".pred-home").value = "";
               box.querySelector(".pred-away").value = "";
@@ -445,7 +320,7 @@
             if (data.predictions) {
               data.predictions.forEach((pred) => {
                 const box = document.querySelector(
-                  `.prediction-box[data-match-id="${pred.match_id}"]`
+                  `.prediction-box[data-match-id="${pred.match_id}"]`,
                 );
                 if (box) {
                   box.querySelector(".pred-home").value = pred.home_score;
@@ -469,6 +344,12 @@
         const payload = JSON.parse(message.payloadString);
         if (topic === "ekstraklasa/notifications") {
           showToast(payload.text);
+        }
+      };
+
+      client.onConnectionLost = function (responseObject) {
+        if (responseObject.errorCode !== 0) {
+          console.log("Połączenie utracone: " + responseObject.errorMessage);
         }
       };
 

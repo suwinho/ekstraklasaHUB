@@ -23,3 +23,10 @@ class Prediction(models.Model):
 
     def __str__(self):
         return f"{self.user.username}: {self.home_team}-{self.away_team} ({self.stake} PLN)"
+    
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    favorite_team = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"Profil {self.user.username} ({self.favorite_team})"

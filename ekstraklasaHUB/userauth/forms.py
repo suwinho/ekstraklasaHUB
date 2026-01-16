@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from .models import Profile
 
 User = get_user_model()
 
@@ -59,7 +60,9 @@ class UserRegistrationForm(forms.ModelForm):
         user.set_password(self.cleaned_data["password"])      
         selected_team = self.cleaned_data.get('favorite_team')     
         if commit:
-            user.save()       
+            user.save()
+            selected_team = self.cleaned_data.get('favorite_team')
+            Profile.objects.create(user=user, favorite_team=selected_team)
         return user
 
 

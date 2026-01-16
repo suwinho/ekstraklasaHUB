@@ -86,7 +86,9 @@ body {
   flex-direction: column;
   overflow: hidden;
   position: relative;
-  transition: transform 0.2s, border-color 0.2s;
+  transition:
+    transform 0.2s,
+    border-color 0.2s;
 }
 
 .tile:hover {
@@ -287,4 +289,260 @@ tbody tr:hover {
   padding: 20px;
   text-align: center;
   color: #666;
+}
+
+/* --- WYSZUKIWARKA --- */
+.search-container {
+  position: relative;
+  margin: 0 20px;
+  flex-grow: 1;
+  max-width: 400px;
+}
+
+#club-search {
+  width: 100%;
+  padding: 10px 15px;
+  border-radius: 20px;
+  border: 1px solid #333;
+  background-color: #1a1a1a;
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+#club-search:focus {
+  border-color: var(--primary-green, #156634);
+}
+
+#search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #222;
+  border: 1px solid #333;
+  border-radius: 8px;
+  list-style: none;
+  padding: 0;
+  margin-top: 5px;
+  z-index: 1000;
+  display: none;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+#search-results li {
+  padding: 12px 15px;
+  cursor: pointer;
+  color: #eee;
+  border-bottom: 1px solid #333;
+  transition: background 0.2s;
+}
+
+#search-results li:last-child {
+  border-bottom: none;
+}
+
+#search-results li:hover {
+  background-color: var(--primary-green, #156634);
+  color: white;
+}
+
+/* --- PORTFEL --- */
+.wallet-display {
+  font-family: "Consolas", monospace;
+  color: #ffd700;
+  font-weight: bold;
+  font-size: 1.1rem;
+  margin-right: 15px;
+  border: 1px solid #555;
+  padding: 5px 10px;
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* --- TYPER / ZAKŁADY --- */
+.prediction-box {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  justify-content: flex-start;
+}
+
+.pred-input {
+  width: 30px;
+  background: #222;
+  border: 1px solid #444;
+  color: #fff;
+  text-align: center;
+  border-radius: 4px;
+  padding: 4px;
+  font-weight: bold;
+}
+
+.pred-stake {
+  width: 50px;
+  background: #1a1a1a;
+  border: 1px solid #ffd700;
+  color: #ffd700;
+  text-align: right;
+  border-radius: 4px;
+  padding: 4px;
+}
+
+.pred-input:focus,
+.pred-stake:focus {
+  outline: none;
+  border-color: var(--primary-green, #156634);
+}
+
+.btn-save-pred {
+  background: none;
+  border: 1px solid #444;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 4px 8px;
+  color: #ccc;
+}
+
+.btn-save-pred:hover {
+  background: var(--primary-green, #156634);
+  border-color: var(--primary-green, #156634);
+  color: #fff;
+}
+
+.btn-del-pred {
+  background: none;
+  border: 1px solid #444;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 4px 8px;
+  color: #ccc;
+  margin-left: 2px;
+}
+
+.btn-del-pred:hover {
+  background: #800;
+  border-color: #800;
+  color: #fff;
+}
+
+/* --- WIDŻET ULUBIONEGO KLUBU --- */
+.tile-fav {
+  position: relative;
+  overflow: hidden;
+}
+
+.fav-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.15;
+  z-index: 0;
+  filter: grayscale(80%);
+}
+
+.fav-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  gap: 15px;
+  padding: 20px;
+}
+
+.fav-logo {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 15px rgba(0, 0, 0, 0.9));
+}
+
+.fav-title {
+  margin: 0;
+  font-size: 1.6rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #fff;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.fav-subtitle {
+  color: #aaa;
+  margin: 5px 0 0 0;
+  font-size: 0.85rem;
+}
+
+.fav-btn {
+  background-color: var(--primary-green, #156634);
+  color: white;
+  text-decoration: none;
+  padding: 10px 25px;
+  border-radius: 30px;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.fav-btn:hover {
+  background-color: #11522a;
+  transform: translateY(-2px);
+}
+
+.fav-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #666;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* --- POWIADOMIENIA MQTT --- */
+#notifications {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mqtt-toast {
+  background: #1a1a1a;
+  border-left: 4px solid var(--primary-green, #156634);
+  color: #fff;
+  padding: 15px 20px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+  border-radius: 4px;
+  min-width: 250px;
+  animation: slideIn 0.3s ease-out;
+  font-size: 0.9rem;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }

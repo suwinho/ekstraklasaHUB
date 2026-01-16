@@ -50,12 +50,30 @@ def dashboard_view(request):
     matches = fetch_data()
     table = fetch_league_table()
     results = fetch_last_events()
+    fav_team = request.user.profile.favorite_team
+
+    team_details = fetch_team_details(fav_team)
+
+    if team_details:
+                team_id = -1
+                for index, (name, _) in enumerate(EKSTRAKLASA_TEAMS):
+                    if name == fav_team:
+                        team_id = index
+                        break
+                
+                favorite_team_data = {
+                    'name': team_details.get('strTeam'),
+                    'badge': team_details.get('strTeamBadge'),
+                    'bg': team_details.get('strTeamFanart1') or team_details.get('strStadiumThumb'),
+                    'id': team_id
+                }
 
     context = {
         'username': request.user.username,
         'matches': matches,
         'table': table,      
         'results': results,  
+        'favorite_team': favorite_team_data,
         'error': None
     }
     
