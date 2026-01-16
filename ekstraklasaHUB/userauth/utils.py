@@ -101,4 +101,4 @@ def send_prediction_notification(username, match, action="zaktualizował typ"):
         client.publish(topic, json.dumps(message))
         client.disconnect()
     except Exception as e:
-        print(f"Błąd wysyłania powiadomienia: {e}")
+        print(f"Błąd: {e}")

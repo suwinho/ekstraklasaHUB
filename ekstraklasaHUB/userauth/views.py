@@ -203,7 +203,6 @@ def predict_match(request):
         prediction.stake = new_stake
         prediction.save()
         
-        # MQTT Notification
         action = f"postawił {new_stake} PLN na" if created else f"zmienił zakład ({new_stake} PLN) na"
         send_prediction_notification(request.user.username, f"{prediction.home_team}-{prediction.away_team}", action)
         
