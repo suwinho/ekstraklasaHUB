@@ -15,7 +15,7 @@ class Prediction(models.Model):
     away_team = models.CharField(max_length=100)
     home_score = models.IntegerField()
     away_score = models.IntegerField()
-    stake = models.DecimalField(max_digits=10, decimal_places=2, default=10.00) # Nowe pole: Stawka
+    stake = models.DecimalField(max_digits=10, decimal_places=2, default=10.00) 
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
