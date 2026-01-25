@@ -121,11 +121,9 @@
                     <span style="color: #666">vs</span> {{ match.strAwayTeam }}
                   </div>
                 </td>
-
                 <td class="center-cell" style="width: 15%">
                   <div class="time-main">{{ match.strTime|slice:":5" }}</div>
                 </td>
-
                 <td style="width: 50%">
                   <div
                     class="prediction-box"
@@ -146,7 +144,6 @@
                       placeholder="G"
                       min="0"
                     />
-
                     <input
                       type="number"
                       class="pred-stake"
@@ -154,7 +151,6 @@
                       min="1"
                       step="0.5"
                     />
-
                     <button
                       class="btn-save-pred"
                       onclick="placeBet('{{ match.idEvent }}')"
@@ -184,13 +180,11 @@
 
       <div class="tile tile-scorers tile-fav">
         <div class="tile-header">TWÓJ KLUB</div>
-
         {% if favorite_team %}
         <div
           class="fav-bg"
           style="background-image: url('{{ favorite_team.bg }}');"
         ></div>
-
         <div class="fav-content">
           {% if favorite_team.badge %}
           <img
@@ -199,15 +193,13 @@
             class="fav-logo"
           />
           {% endif %}
-
           <div>
             <h3 class="fav-title">{{ favorite_team.name }}</h3>
             <p class="fav-subtitle">WYBRANY ZESPÓŁ</p>
           </div>
-
-          <a href="/club/{{ favorite_team.id }}/stats/" class="fav-btn">
-            Przejdź do profilu ➜
-          </a>
+          <a href="/club/{{ favorite_team.id }}/stats/" class="fav-btn"
+            >Przejdź do profilu ➜</a
+          >
         </div>
         {% else %}
         <div class="fav-empty">
@@ -216,184 +208,42 @@
         </div>
         {% endif %}
       </div>
+
+      <div class="tile tile-chat">
+        <div class="tile-header">TRYBUNA KIBICÓW (LIVE)</div>
+
+        <div class="chat-container" id="chat-box">
+          <div class="chat-msg">
+            <span class="msg-time">System:</span> Witaj na czacie! Dobre maniery
+            obowiązują.
+          </div>
+        </div>
+
+        <div class="chat-controls">
+          <input
+            type="text"
+            id="chat-input"
+            placeholder="Napisz coś..."
+            maxlength="60"
+          />
+          <button class="chat-send-btn" onclick="sendMessage()" title="Wyślij">
+            ➤
+          </button>
+        </div>
+      </div>
     </div>
 
     <div id="notifications"></div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"
+      type="text/javascript"
+    ></script>
 
     <script>
-      function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== "") {
-          const cookies = document.cookie.split(";");
-          for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === name + "=") {
-              cookieValue = decodeURIComponent(
-                cookie.substring(name.length + 1),
-              );
-              break;
-            }
-          }
-        }
-        return cookieValue;
-      }
-
-      function placeBet(id) {
-        const box = document.querySelector(
-          `.prediction-box[data-match-id="${id}"]`,
-        );
-        const homeScore = box.querySelector(".pred-home").value;
-        const awayScore = box.querySelector(".pred-away").value;
-        const stake = box.querySelector(".pred-stake").value;
-
-        if (homeScore === "" || awayScore === "" || stake === "") {
-          alert("Uzupełnij wynik i stawkę!");
-          return;
-        }
-
-        fetch("/api/predict/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": getCookie("csrftoken"),
-          },
-          body: JSON.stringify({
-            match_id: id,
-            home_team: box.dataset.home,
-            away_team: box.dataset.away,
-            home_score: homeScore,
-            away_score: awayScore,
-            stake: stake,
-          }),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.error) {
-              alert("Błąd: " + data.error);
-            } else {
-              box.querySelector(".btn-del-pred").style.display = "inline-block";
-              updateBalance(data.new_balance);
-            }
-          })
-          .catch((err) => console.error(err));
-      }
-
-      function cancelBet(id) {
-        if (!confirm("Wycofać zakład? Środki zostaną zwrócone.")) return;
-
-        fetch("/api/predict/", {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": getCookie("csrftoken"),
-          },
-          body: JSON.stringify({ match_id: id }),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.status === "deleted") {
-              const box = document.querySelector(
-                `.prediction-box[data-match-id="${id}"]`,
-              );
-              box.querySelector(".pred-home").value = "";
-              box.querySelector(".pred-away").value = "";
-              box.querySelector(".pred-stake").value = "";
-              box.querySelector(".btn-del-pred").style.display = "none";
-              updateBalance(data.new_balance);
-            }
-          });
-      }
-
-      function updateBalance(amount) {
-        document.getElementById("user-balance").innerText =
-          parseFloat(amount).toFixed(2);
-      }
-
-      document.addEventListener("DOMContentLoaded", () => {
-        fetch("/api/predict/")
-          .then((res) => res.json())
-          .then((data) => {
-            updateBalance(data.balance);
-
-            if (data.predictions) {
-              data.predictions.forEach((pred) => {
-                const box = document.querySelector(
-                  `.prediction-box[data-match-id="${pred.match_id}"]`,
-                );
-                if (box) {
-                  box.querySelector(".pred-home").value = pred.home_score;
-                  box.querySelector(".pred-away").value = pred.away_score;
-                  box.querySelector(".pred-stake").value = pred.stake;
-                  box.querySelector(".btn-del-pred").style.display =
-                    "inline-block";
-                }
-              });
-            }
-          });
-      });
-
-      const mqtt_broker = "broker.hivemq.com";
-      const mqtt_port = 8000;
-      const clientID = "web_fan_" + Math.random().toString(16).substr(2, 8);
-      const client = new Paho.MQTT.Client(mqtt_broker, mqtt_port, clientID);
-
-      client.onMessageArrived = function (message) {
-        const topic = message.destinationName;
-        const payload = JSON.parse(message.payloadString);
-        if (topic === "ekstraklasa/notifications") {
-          showToast(payload.text);
-        }
-      };
-
-      client.onConnectionLost = function (responseObject) {
-        if (responseObject.errorCode !== 0) {
-          console.log("Połączenie utracone: " + responseObject.errorMessage);
-        }
-      };
-
-      client.connect({
-        onSuccess: function () {
-          console.log("MQTT Connected");
-          client.subscribe("ekstraklasa/notifications");
-        },
-        useSSL: false,
-      });
-
-      function showToast(text) {
-        const container = document.getElementById("notifications");
-        const toast = document.createElement("div");
-        toast.className = "mqtt-toast";
-        toast.innerHTML = `🔔 ${text}`;
-        container.appendChild(toast);
-        setTimeout(() => {
-          toast.remove();
-        }, 4000);
-      }
-
-      const searchInput = document.getElementById("club-search");
-      const resultsList = document.getElementById("search-results");
-      searchInput.addEventListener("input", function () {
-        const query = searchInput.value;
-        if (query.length > 0) {
-          fetch(`/api/search/?search=${query}`)
-            .then((r) => r.json())
-            .then((d) => {
-              resultsList.innerHTML = "";
-              if (d.results.length > 0) {
-                resultsList.style.display = "block";
-                d.results.forEach((club) => {
-                  const li = document.createElement("li");
-                  li.textContent = club.name;
-                  li.onclick = () =>
-                    (window.location.href = `/club/${club.id}/stats/`);
-                  resultsList.appendChild(li);
-                });
-              } else resultsList.style.display = "none";
-            });
-        } else resultsList.style.display = "none";
-      });
+      const currentUser = "{{ username }}";
     </script>
+
+    <script src="{% static 'dashboard.js' %}"></script>
   </body>
 </html>
