@@ -4,6 +4,7 @@ import paho.mqtt.client as mqtt
 import json
 from dotenv import load_dotenv
 
+
 load_dotenv()
 
 API_KEY = os.getenv("API_KEY")
@@ -102,3 +103,4 @@ def send_prediction_notification(username, match, action="zaktualizował typ"):
         client.disconnect()
     except Exception as e:
         print(f"Błąd: {e}")
+

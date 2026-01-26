@@ -174,26 +174,61 @@ if (client) {
 function sendMessage() {
   const input = document.getElementById("chat-input");
   const msgText = input.value.trim();
+  const useHttp = document.getElementById("protocol-switch").checked;
   if (typeof currentUser === "undefined") {
     console.error("Błąd: Brak nazwy użytkownika.");
     return;
   }
 
-  if (msgText && client) {
-    const messageData = {
-      user: currentUser,
-      text: msgText,
-      time: new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    };
+  if (msgText) {
+    if (useHttp) {
+      console.log("HTTP");
+      fetch("/api/chat/send/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body: JSON.stringify({ text: msgText }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.status === "ok") {
+            input.value = "";
+            appendChatMessage({
+              user: currentUser,
+              text: msgText,
+              time: new Date().toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              }),
+            });
+          } else {
+            alert("Błąd wysyłania HTTP: " + data.error);
+          }
+        })
+        .catch((err) => console.error("Błąd API czatu:", err));
+    } else {
+      if (client) {
+        console.log("WEB SOCKET");
+        const messageData = {
+          user: currentUser,
+          text: msgText,
+          time: new Date().toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+        };
 
-    const message = new Paho.MQTT.Message(JSON.stringify(messageData));
-    message.destinationName = chat_topic;
-    client.send(message);
+        const message = new Paho.MQTT.Message(JSON.stringify(messageData));
+        message.destinationName = chat_topic;
+        client.send(message);
 
-    input.value = "";
+        input.value = "";
+      } else {
+        alert("Błąd: Klient MQTT nie jest połączony.");
+      }
+    }
   }
 }
 

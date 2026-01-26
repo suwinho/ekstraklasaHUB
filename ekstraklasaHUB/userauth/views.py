@@ -5,6 +5,12 @@ from django.contrib import messages
 from .forms import UserRegistrationForm, LoginForm
 from django.http import JsonResponse, Http404
 from .utils import fetch_data, fetch_league_table, fetch_last_events, fetch_team_details, fetch_last_matches
+from datetime import datetime
+import json
+from django.views.decorators.csrf import csrf_exempt
+import paho.mqtt.client as mqtt
+import paho.mqtt.publish as publish
+
 
 def register_view(request):
     if request.method == 'POST':
@@ -168,3 +174,36 @@ def club_stats_view(request, club_id):
             
     return render(request, 'stats.html', context)
 
+
+MQTT_BROKER = "broker.hivemq.com"
+MQTT_PORT = 1883
+MQTT_TOPIC = "ekstraklasa/chat"
+
+@csrf_exempt
+@login_required
+def send_chat_message_http(request):
+
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            message_text = data.get('text')
+            user = request.user.username
+            
+            payload = {
+                'user': user,
+                'text': message_text,
+                'time': datetime.now().strftime("%H:%M") 
+            }
+            
+            client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, "DjangoBackendPublisher")
+            client.connect(MQTT_BROKER, MQTT_PORT, 60)
+            
+            client.publish(MQTT_TOPIC, json.dumps(payload))
+            client.disconnect()
+            
+            return JsonResponse({'status': 'ok', 'protocol': 'HTTP -> MQTT Backend'})
+            
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+            
+    return JsonResponse({'error': 'Method not allowed'}, status=405)
