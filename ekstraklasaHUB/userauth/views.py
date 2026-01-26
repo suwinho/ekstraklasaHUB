@@ -8,9 +8,10 @@ from .utils import fetch_data, fetch_league_table, fetch_last_events, fetch_team
 from datetime import datetime
 import json
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 import paho.mqtt.client as mqtt
-import paho.mqtt.publish as publish
-
+from django.shortcuts import get_object_or_404
+from .models import Message
 
 def register_view(request):
     if request.method == 'POST':
@@ -179,31 +180,68 @@ MQTT_BROKER = "broker.hivemq.com"
 MQTT_PORT = 1883
 MQTT_TOPIC = "ekstraklasa/chat"
 
-@csrf_exempt
-@login_required
-def send_chat_message_http(request):
 
-    if request.method == 'POST':
+@login_required
+@require_http_methods(["PUT", "DELETE"]) 
+def message_detail(request, msg_id):
+    message = get_object_or_404(Message, id=msg_id)
+    if message.user != request.user:
+        return JsonResponse({
+            'status': 'error', 
+            'error': 'Nie masz uprawnień do edycji tej wiadomości.'
+        }, status=403)
+
+    if request.method == "PUT":
         try:
             data = json.loads(request.body)
-            message_text = data.get('text')
-            user = request.user.username
+            new_text = data.get('text', '').strip()
+            if not new_text:
+                return JsonResponse({'status': 'error', 'error': 'Wiadomość nie może być pusta.'}, status=400)
+            message.content = new_text  
+            message.save()
+
+            return JsonResponse({'status': 'ok', 'text': new_text})
+
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'error': 'Błędny format danych.'}, status=400)
+
+    elif request.method == "DELETE":
+        message.delete()
+        return JsonResponse({'status': 'ok'})
+
+    return JsonResponse({'status': 'error', 'error': 'Metoda niedozwolona'}, status=405)
+
+@login_required
+def send_message(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            msg_text = data.get('text', '').strip()
+            use_mqtt = data.get('use_mqtt', False) 
             
-            payload = {
-                'user': user,
-                'text': message_text,
-                'time': datetime.now().strftime("%H:%M") 
-            }
+            if msg_text:
+                new_msg = Message.objects.create(
+                    user=request.user,
+                    content=msg_text
+                )
+                
+                msg_data = new_msg.to_dict()    
+                if use_mqtt:
+                    try:
+                        client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, "DjangoBackendPublisher")
+                        client.connect(MQTT_BROKER, MQTT_PORT, 60)
+                        client.publish(MQTT_TOPIC, json.dumps(msg_data))
+                        client.disconnect()
+                        print(f"DEBUG: Wysłano przez MQTT wiadomość ID: {new_msg.id}")
+                    except Exception as e:
+                        print(f"Błąd MQTT w Django: {e}")
+
+                response_data = msg_data
+                response_data['status'] = 'ok'
+                
+                return JsonResponse(response_data)
+                
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'error': 'Błędny JSON'}, status=400)
             
-            client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, "DjangoBackendPublisher")
-            client.connect(MQTT_BROKER, MQTT_PORT, 60)
-            
-            client.publish(MQTT_TOPIC, json.dumps(payload))
-            client.disconnect()
-            
-            return JsonResponse({'status': 'ok', 'protocol': 'HTTP -> MQTT Backend'})
-            
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=500)
-            
-    return JsonResponse({'error': 'Method not allowed'}, status=405)
+    return JsonResponse({'status': 'error', 'error': 'Błąd żądania'}, status=400)

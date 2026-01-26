@@ -10,5 +10,6 @@ urlpatterns = [
     path('api/search/', views.search_clubs_api, name='search_clubs_api'),
     path('club/<int:club_id>/stats/', views.club_stats_view, name='club_stats'),
     path('api/predict/', typer.predict_match, name='predict_match'),
-    path('api/chat/send/', views.send_chat_message_http, name='chat_send_http'),
+    path('api/chat/send/', views.send_message, name='chat_send_http'),
+    path('api/chat/message/<int:msg_id>/', views.message_detail, name='message_detail'),
 ]   

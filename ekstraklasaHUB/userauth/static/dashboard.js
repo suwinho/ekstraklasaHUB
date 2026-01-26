@@ -196,6 +196,7 @@ function sendMessage() {
           if (data.status === "ok") {
             input.value = "";
             appendChatMessage({
+              id: data.id,
               user: currentUser,
               text: msgText,
               time: new Date().toLocaleTimeString([], {
@@ -246,10 +247,126 @@ function appendChatMessage(data) {
   const isMe = typeof currentUser !== "undefined" && data.user === currentUser;
   div.className = "chat-msg" + (isMe ? " me" : "");
 
-  div.innerHTML = `<span class="msg-time">${data.time}</span> <strong>${data.user}:</strong> ${data.text}`;
+  div.dataset.id = data.id;
+  let buttonsHtml = "";
+  if (isMe && data.id) {
+    buttonsHtml = `
+        <div class="msg-actions">
+            <button onclick="enableEditMode(this)" class="btn-edit" title="Edytuj">✏️</button>
+            <button onclick="deleteMessage(this)" class="btn-delete" title="Usuń">🗑️</button>
+        </div>
+      `;
+  }
+
+  div.innerHTML = `
+      <span class="msg-time">${data.time}</span> 
+      <strong>${data.user}:</strong> 
+      <span class="msg-content">${data.text}</span>
+      ${buttonsHtml}
+  `;
 
   chatBox.appendChild(div);
   chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function deleteMessage(btn) {
+  if (!confirm("Czy na pewno chcesz usunąć tę wiadomość?")) return;
+
+  const msgDiv = btn.closest(".chat-msg");
+  const msgId = msgDiv.dataset.id;
+
+  fetch(`/api/chat/message/${msgId}/`, {
+    method: "DELETE",
+    headers: {
+      "X-CSRFToken": getCookie("csrftoken"),
+    },
+  })
+    .then((res) => {
+      if (res.ok) {
+        msgDiv.remove();
+      } else {
+        alert("Nie udało się usunąć wiadomości.");
+      }
+    })
+    .catch((err) => console.error("Błąd usuwania:", err));
+}
+
+function enableEditMode(btn) {
+  const msgDiv = btn.closest(".chat-msg");
+  const contentSpan = msgDiv.querySelector(".msg-content");
+  const currentText = contentSpan.innerText;
+  const actionsDiv = msgDiv.querySelector(".msg-actions");
+
+  actionsDiv.style.display = "none";
+
+  const editInput = document.createElement("input");
+  editInput.type = "text";
+  editInput.value = currentText;
+  editInput.className = "edit-input";
+
+  const saveBtn = document.createElement("button");
+  saveBtn.innerText = "Zapisz";
+  saveBtn.onclick = () =>
+    saveEdit(
+      msgDiv,
+      editInput.value,
+      contentSpan,
+      actionsDiv,
+      editInput,
+      saveBtn,
+      cancelBtn,
+    );
+
+  const cancelBtn = document.createElement("button");
+  cancelBtn.innerText = "Anuluj";
+  cancelBtn.onclick = () => {
+    contentSpan.style.display = "";
+    editInput.remove();
+    saveBtn.remove();
+    cancelBtn.remove();
+    actionsDiv.style.display = "";
+  };
+
+  contentSpan.style.display = "none";
+  msgDiv.appendChild(editInput);
+  msgDiv.appendChild(saveBtn);
+  msgDiv.appendChild(cancelBtn);
+}
+
+function saveEdit(
+  msgDiv,
+  newText,
+  contentSpan,
+  actionsDiv,
+  editInput,
+  saveBtn,
+  cancelBtn,
+) {
+  const msgId = msgDiv.dataset.id;
+
+  fetch(`/api/chat/message/${msgId}/`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": getCookie("csrftoken"),
+    },
+    body: JSON.stringify({ text: newText }),
+  })
+    .then((res) => res.json())
+    .then((data) => {
+      if (data.status === "ok" || !data.error) {
+        contentSpan.innerText = newText;
+
+        contentSpan.style.display = "";
+        editInput.remove();
+        saveBtn.remove();
+        cancelBtn.remove();
+        actionsDiv.style.display = "";
+      } else {
+        alert("Błąd edycji: " + data.error);
+      }
+    })
+    .catch((err) => console.error("Błąd edycji:", err));
 }
 
 /* ==========================================================================
