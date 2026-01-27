@@ -3,7 +3,7 @@ import os
 import paho.mqtt.client as mqtt
 import json
 from dotenv import load_dotenv
-
+from datetime import datetime
 
 load_dotenv()
 
@@ -104,3 +104,10 @@ def send_prediction_notification(username, match, action="zaktualizował typ"):
     except Exception as e:
         print(f"Błąd: {e}")
 
+
+def write_logs_to_file(str): 
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    msg = f"[{timestamp}] {str}\n"
+    with open('logs.txt', 'a') as f:
+        f.write(msg)
+  

@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import UserRegistrationForm, LoginForm
 from django.http import JsonResponse, Http404
-from .utils import fetch_data, fetch_league_table, fetch_last_events, fetch_team_details, fetch_last_matches
+from .utils import fetch_data, fetch_league_table, fetch_last_events, fetch_team_details, fetch_last_matches, write_logs_to_file
 from datetime import datetime
 import json
 from django.views.decorators.csrf import csrf_exempt
@@ -12,6 +12,7 @@ from django.views.decorators.http import require_http_methods
 import paho.mqtt.client as mqtt
 from django.shortcuts import get_object_or_404
 from .models import Message
+
 
 def register_view(request):
     if request.method == 'POST':
@@ -195,10 +196,14 @@ def message_detail(request, msg_id):
         try:
             data = json.loads(request.body)
             new_text = data.get('text', '').strip()
+            old_content = message.content
             if not new_text:
                 return JsonResponse({'status': 'error', 'error': 'Wiadomość nie może być pusta.'}, status=400)
             message.content = new_text  
             message.save()
+            
+            log_text = f"EDIT | User: {request.user.username} | ID: {message.id} | OLD_TEXT: '{old_content}' NEW_TEXT: '{new_text}'"
+            write_logs_to_file(log_text)
 
             return JsonResponse({'status': 'ok', 'text': new_text})
 
@@ -206,7 +211,10 @@ def message_detail(request, msg_id):
             return JsonResponse({'status': 'error', 'error': 'Błędny format danych.'}, status=400)
 
     elif request.method == "DELETE":
+        deleted_content = message.content
         message.delete()
+        log_text = f"DELETE | User: {request.user.username} | ID: {message.id} | TEXT: '{deleted_content}''"
+        write_logs_to_file(log_text)
         return JsonResponse({'status': 'ok'})
 
     return JsonResponse({'status': 'error', 'error': 'Metoda niedozwolona'}, status=405)
@@ -220,6 +228,7 @@ def send_message(request):
             use_mqtt = data.get('use_mqtt', False) 
             
             if msg_text:
+                write_logs_to_file(msg_text)
                 new_msg = Message.objects.create(
                     user=request.user,
                     content=msg_text
