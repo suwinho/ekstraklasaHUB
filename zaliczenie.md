@@ -1,52 +1,51 @@
-# ⚽ EkstraklasaHUB - Dokumentacja Projektu
+# ⚽ EkstraklasaHUB - Real-Time Sports Platform
 
-### 📋 Kryteria Oceny i Realizacja Funkcjonalności
+EkstraklasaHUB is a comprehensive web application designed for live football match tracking, betting simulation, and real-time user interaction. The project focuses on high-performance data synchronization and low-latency communication using a dual-protocol architecture.
 
 ---
 
-## 🌐 HTTP (6.0 / 6.0 pkt)
+## 🚀 Key Technical Highlights
 
-Zaimplementowano pełną komunikację opartą na architekturze REST.
+* **Dual-Protocol Chat System**: Seamless message exchange using both **MQTT** and **HTTP** protocols.
+* **Real-Time Synchronization**: Live match results and betting odds updated instantly via **MQTT** and **WebSockets**.
+* **RESTful Architecture**: Full CRUD operations for user management and betting systems.
+* **Security First**: Implementation of secure password **hashing** and session-based authentication.
 
-### 🔹 CRUD (Operacje na danych)
-| Zasób | Akcje | Metody HTTP |
+---
+
+## 🛠 Tech Stack
+
+* **Backend**: Python, Django
+* **Real-Time**: MQTT Protocol, WebSockets
+* **Database**: PostgreSQL / Relational DB
+* **Frontend**: JavaScript, HTML/CSS (integrated with WebSocket clients)
+
+---
+
+## 🌐 Feature Breakdown
+
+### 1. HTTP Architecture (REST)
+The platform implements a full REST-compliant API for core data management:
+
+| Resource | Actions | HTTP Methods |
 | :--- | :--- | :--- |
-| **Użytkownik** | Logowanie / Rejestracja | `POST` |
-| **Zakłady bukmacherskie** | Dodawanie, Pobieranie, Usuwanie | `POST`, `GET`, `DELETE` |
-| **Czat tekstowy** | Wysyłanie, Pobieranie, Edycja, Usuwanie | `POST`, `GET`, `PUT`, `DELETE` |
+| **User** | Registration, Authentication | `POST` |
+| **Betting** | Odds management, Place/Delete bets | `POST`, `GET`, `DELETE` |
+| **Chat History** | Message retrieval and moderation | `POST`, `GET`, `PUT`, `DELETE` |
 
-### 🔹 Funkcje dodatkowe HTTP
-* **Wyszukiwanie wzorcem:** Możliwość filtrowania danych na stronie głównej przy użyciu wzorca tekstowego (zgodnie z REST).
-* **Auth REST:** Pełna obsługa logowania i wylogowywania użytkownika.
-* **Klient:** Stworzono dedykowaną aplikację kliencką do obsługi wszystkich punktów końcowych serwera.
+* **Pattern Search**: Advanced data filtering on the main dashboard using text-pattern matching.
+* **Dedicated Client**: Custom application logic to handle server endpoint interactions.
 
----
+### 2. Real-Time Communication (MQTT & WebSockets)
 
-## 📡 MQTT, WS, SSE (6.0 / 6.0 pkt)
+To ensure low-latency updates, the project leverages bidirectional communication:
 
-Zaimplementowano mechanizmy komunikacji dwukierunkowej i czasu rzeczywistego.
+* **MQTT Backend**: Used for instant message relay in chat and broadcasting live match score changes.
+* **WebSocket Frontend**: Enables the UI to reflect changes immediately without requiring a page refresh.
+* **Operational Dualism**: Users can interact with the chat via MQTT or traditional HTTP, ensuring system redundancy.
 
-### 🔹 Backend: MQTT
-
-Protokół **MQTT** został wykorzystany do obsługi:
-* 🗨️ **Czatu** (wymiana wiadomości między użytkownikami).
-* 📈 **Aktualizacji wyników** meczów w czasie rzeczywistym.
-* 🎰 **Typowania wyników** (odświeżanie kursów i zakładów).
-
-### 🔹 Frontend: WebSocket (WS)
-* Wykorzystanie protokołu WebSocket na poziomie frontendu do natychmiastowego wyświetlania zmian bez konieczności odświeżania strony.
-
----
-
-## 🛠️ Inne (6.0 / 6.0 pkt)
-
-Dodatkowe technologie i zaawansowane funkcjonalności systemowe.
-
-### 🔹 Funkcjonalności protokołów
-* **Dualizm komunikacji:** Możliwość korzystania z czatu za pomocą dwóch niezależnych protokołów: **MQTT** oraz **HTTP**.
-* **Bezpieczeństwo:** Implementacja **JWT** (JSON Web Token) do autoryzacji zapytań.
-
-### 🔹 System i Dane
-* **Baza danych:** Wykorzystanie bazy danych do trwałego przechowywania informacji o użytkownikach, meczach i zakładach.
+### 3. Data Integrity & Security
+* **Password Protection**: All user credentials are secured using modern hashing functions.
+* **Persistent Storage**: A relational database handles complex relationships between users, match events, and betting history.
 
 ---
