@@ -1,4 +1,3 @@
-Mateusz Suwiński Grupa IV
 
 # EkstraklasaHUB
 
@@ -6,41 +5,39 @@ A modern and interactive web dashboard for tracking the Polish football league, 
 
 ## 📋 Project Description
 
-This application serves as a central command center for football fans. It offers real-time access to league tables, club statistics, and live match results. The project combines a robust backend based on **Python (Django)** with a dynamic frontend that utilizes **WebSockets (MQTT)** for live data updates without page reloading. The interface features a custom dark-mode design optimized for data readability.
+This application serves as a central command center for football fans. It offers real-time access to league tables, club statistics, and live match results. The project combines a robust backend based on **Python (Django)** with a dynamic frontend that utilizes **WebSockets (MQTT)** for live data updates without page reloading. 
 
 ## 🚀 Features
 
 - **Dashboard & Analytics:**
-  - View current league standings (Live Table).
-  - Check upcoming fixtures and recent results.
-  - Analyze player roles and fit scores.
+  - View current league standings
+  - Check upcoming fixtures and recent results
 - **Live Score System:**
-  - Real-time score updates via MQTT protocol.
-  - Instant status changes (Live/Finished).
+  - Real-time score updates via MQTT protocol
+  - Instant status changes (Live/Finished)
 - **Club Profiles:**
-  - Detailed information about every team (Stadium, Founding Year).
-  - Visual representation of kits/jerseys.
-  - Match history and form analysis.
+  - Detailed information about every team
+  - Match history and form analysis
 - **Search Engine:**
-  - Dynamic club search with autocomplete suggestions.
+  - Dynamic club search with autocomplete suggestions
 
 ## 🛠️ Tech Stack
 
 The project utilizes the following technologies:
 
-- **Python 3.x** - Programming language.
-- **Django 4.x** - Web framework.
-- **JavaScript (ES6+)** - Client-side logic.
-- **Paho MQTT** - WebSocket client for live data.
-- **HTML5 / CSS3** - Custom styling (Dark Theme).
+- **Python 3.x** - Programming language
+- **Django 4.x** - Web framework
+- **JavaScript (ES6+)** - Client-side logic
+- **Paho MQTT** - WebSocket client for live data
+- **HTML5 / CSS3** - Custom styling (Dark Theme)
 
 ## ⚙️ Prerequisites
 
 To run this application locally, you will need:
 
-- Python 3.8 or higher.
-- pip (Python package manager).
-- (Optional) Git.
+- Python 3.8 or higher
+- pip
+- Git
 
 ## ▶️ How to Run
 
@@ -56,7 +53,7 @@ To run this application locally, you will need:
     cd ekstraklasaHUB
     ```
 
-3.  **Set up a virtual environment (recommended):**
+3.  **Set up a virtual environment:**
 
     ```bash
     # Windows
