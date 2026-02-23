@@ -32,7 +32,7 @@ class TestUserAuth(TestCase):
         self.assertFalse(Message.objects.filter(id=self.msg.id).exists())
 
     def test_delete_message_by_other(self):
-        unknown = User.objects.create_user(username="unk", password="asd")
+        User.objects.create_user(username="unk", password="asd")
         self.client.login(username='unk',password='asd')
         url = reverse('message_detail', args = [self.msg.id])
         response = self.client.delete(url)
@@ -79,3 +79,81 @@ class TestUserAuth(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['status'], 'ok')
         self.assertTrue(Message.objects.filter(content='new text').exists())
+    
+    def test_register_succes(self):
+        url = reverse('register')
+        data = {
+            'username': 'new_user',
+            'password': 'asd',
+            'confirm_password': 'asd',
+            'favorite_team': 'Motor Lublin'
+        }
+        response = self.client.post(url,data)
+        self.assertRedirects(response, reverse('login'))
+        self.assertTrue(User.objects.filter(username='new_user').exists())
+    
+    def test_register_fail(self):
+        url = reverse('register')
+        data = {
+            'username': 'new_user',
+            'password': 'asd',
+            'confirm_password': 'asd1',
+            'favorite_team': 'Motor Lublin'
+        }
+        response = self.client.post(url,data)
+        self.assertEqual(response.status_code, 200)
+        self.assertFormError(response.context['form'], None, 'Hasła nie są identyczne.')
+
+    @patch('userauth.views.fetch_team_details')
+    @patch('userauth.views.fetch_last_matches')
+    def test_club_stats_view_success(self,mock_matches, mock_details):
+        mock_details.return_value = {
+            'idTeam': '1337',
+            'strTeam': 'Lech Poznań',
+            'strTeamBadge': 'http://image.com/badge.png',
+            'strBadge': 'http://image.com/badge.png',
+            'strFanart1': 'http://image.com/fanart.png', 
+            'strStadiumThumb': 'http://image.com/stadium.png' 
+        }
+        mock_matches.return_value = [
+            {'strHomeTeam': 'Lech Poznań', 
+             'strAwayTeam': 'Legia', 
+             'intHomeScore': '2', 
+             'intAwayScore': '0', 
+             'dateEvent': '2025-01-01'}
+        ]
+        url = reverse('club_stats', args=[4]) 
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('Lech Poznań', response.content.decode())
+        self.assertEqual(len(response.context['last_matches']), 1)
+    
+    def test_club_stats_view_fail(self):
+        url = reverse('club_stats', args=[999])
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 404)
+    
+    @patch('userauth.views.fetch_team_details')
+    @patch('userauth.views.fetch_data')
+    @patch('userauth.views.fetch_league_table')
+    @patch('userauth.views.fetch_last_events')
+    def test_dashboard_favorite_team(self, mock_results, mock_table, mock_data, mock_details):
+        self.client.login(username='abc', password = 'asd')
+        mock_details.return_value = {
+        'strTeam': 'Lechia Gdańsk',
+        'strTeamBadge': 'badge.png',
+        'strTeamFanart1': 'art.png'
+        }
+        mock_data.return_value = [{'event': 'mecz'}]
+        mock_table.return_value = [{'team': 'Lechia'}] 
+        response = self.client.get(reverse('dashboard'))
+        self.assertEqual(response.context['favorite_team']['name'], 'Lechia Gdańsk')
+    
+    @patch('userauth.views.fetch_data')
+    @patch('userauth.views.fetch_league_table')
+    def test_dashboard_api_fail(self, mock_data, mock_table):
+        self.client.login(username='abc', password = 'asd')
+        mock_data.return_value = []
+        mock_table.return_value = []
+        response = self.client.get(reverse('dashboard'))
+        self.assertEqual(response.context['error'], "API error")
